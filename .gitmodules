@@ -1,9 +1,10 @@
 [submodule "ripl"]
 	path = ripl
 	url = https://github.com/maxnowack/ripl.git
-[submodule "dnsrecon"]
-	path = dnsrecon
-	url = https://github.com/darkoperator/dnsrecon.git
 [submodule "wappalyzer"]
 	path = wappalyzer
 	url = https://github.com/ElbertF/Wappalyzer.git
+
+[submodule "subbrute"]
+	path = subbrute
+	url = https://github.com/TheRook/subbrute.git
