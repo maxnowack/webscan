@@ -1,15 +1,12 @@
 exec = require('child_process').exec
 jf = require 'jsonfile'
-
+request = require 'request'
 ripl =
   path: "./ripl.sh"
   file: "ripl/ripl.json"
 dns =
   path: "./subbrute.sh"
   file: "subbrute/dns.json"
-http =
-  path: ""
-  file: ""
 
 if not process.argv[2]
   console.log 'no host specified'
@@ -23,6 +20,8 @@ myhost =
     http:'waiting'
 
 hosts = [myhost]
+
+results = []
 
 ###
 output =->
@@ -66,7 +65,8 @@ startripl =->
               status:
                 ripl:'done'
                 dns:'waiting'
-          console.log my + ' new'
+                http:'waiting'
+            #console.log my + ' new'
         start()
 
 startDns =->
@@ -90,7 +90,8 @@ startDns =->
             status:
               ripl:'waiting'
               dns:'done'
-          console.log my + ' new'
+              http:'waiting'
+          #console.log my + ' new'
       start()
 
 startHttp =->
@@ -98,12 +99,28 @@ startHttp =->
     (host for host in hosts when host.status.http is 'waiting')
   waitingHosts.forEach (host)->
     host.status.http = 'working'
-    exec http.path + ' ' + host.name, (err,stdout)->
-      host.status.http = stdout
-      console.log host.status.http
+    cb = (err,res,data)->
+      if not res
+        return
+      cb = (elm)->
+        elm.url==res.request.uri.href
+      if not results.some cb
+        newhost =
+          url: res.request.uri.href
+          error: err
+          statusCode: res.statusCode
+          headers: res.headers
+        results.push newhost
+        console.log newhost.url
+        jf.writeFileSync 'results.json',results
+
+    request 'http://' + host.name + '/',cb
+    request 'https://' + host.name + '/',cb
+    host.status.http='done'
 
 start =->
   startripl()
   startDns()
+  startHttp()
 
 start()
