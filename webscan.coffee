@@ -1,7 +1,3 @@
-exec = require('child_process').exec
-jf = require 'jsonfile'
-request = require 'request'
-fs = require 'fs'
 ripl =
   enabled: false
   path: "./ripl.sh"
@@ -14,6 +10,11 @@ ritx =
   enabled: true
   path: "./ritx.sh"
   file: "RitX/out.txt"
+
+exec = require('child_process').exec
+jf = require 'jsonfile'
+request = require 'request'
+fs = require 'fs'
 
 if not process.argv[2]
   console.log 'no host specified'
