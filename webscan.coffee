@@ -2,9 +2,11 @@ exec = require('child_process').exec
 jf = require 'jsonfile'
 request = require 'request'
 ripl =
+  enabled: false
   path: "./ripl.sh"
   file: "ripl/ripl.json"
 dns =
+  enabled: false
   path: "./subbrute.sh"
   file: "subbrute/dns.json"
 
@@ -119,8 +121,9 @@ startHttp =->
     host.status.http='done'
 
 start =->
-  startripl()
-  startDns()
+  startripl() if ripl.enabled
+  startDns() if dns.enabled
+  startRitX() if ritx.enabled
   startHttp()
 
 start()
