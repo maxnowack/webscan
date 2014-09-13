@@ -1,3 +1,3 @@
 #!/bin/bash
 cd subbrute
-python subbrute.py $1
+python subbrute.py -c 3 $1
