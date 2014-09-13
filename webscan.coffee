@@ -1,6 +1,7 @@
 exec = require('child_process').exec
 jf = require 'jsonfile'
 request = require 'request'
+fs = require 'fs'
 ripl =
   enabled: false
   path: "./ripl.sh"
@@ -9,6 +10,10 @@ dns =
   enabled: false
   path: "./subbrute.sh"
   file: "subbrute/dns.json"
+ritx =
+  enabled: true
+  path: "./ritx.sh"
+  file: "RitX/out.txt"
 
 if not process.argv[2]
   console.log 'no host specified'
@@ -19,29 +24,12 @@ myhost =
   status:
     ripl:'waiting'
     dns:'waiting'
+    ritx:'waiting'
     http:'waiting'
 
 hosts = [myhost]
 
 results = []
-
-###
-output =->
-
-  waiting = (host for host in hosts when host.status.ripl is 'waiting').length
-  done = (host for host in hosts when host.status.ripl is 'done').length
-  working = (host for host in hosts when host.status.ripl is 'working').length
-  error = (host for host in hosts when host.status.ripl is 'error').length
-
-  console.log '\u001B[2J\u001B[0;0f'
-
-  console.log 'waiting: ' + waiting
-  console.log 'working: ' + working
-  console.log 'error: ' + error
-  console.log 'done: ' + done
-
-setInterval output,100
-###
 
 startripl =->
   waitingHosts =
@@ -67,6 +55,7 @@ startripl =->
               status:
                 ripl:'done'
                 dns:'waiting'
+                ritx:'waiting'
                 http:'waiting'
             #console.log my + ' new'
         start()
@@ -92,8 +81,36 @@ startDns =->
             status:
               ripl:'waiting'
               dns:'done'
+              ritx:'waiting'
               http:'waiting'
           #console.log my + ' new'
+      start()
+
+startRitX =->
+  waitingHosts =
+    (host for host in hosts when host.status.ritx is 'waiting')
+  waitingHosts.forEach (host)->
+    host.status.ritx = 'working'
+    exec ritx.path + ' ' + host.name, (err,stdout)->
+      host.status.ritx = 'done'
+      console.log host.name + ' ritx done'
+      if err
+        host.status.ritx = 'error'
+        console.log err
+        return
+      for my in fs.readFileSync(ritx.file,'utf8').split '\n'
+        if my.trim() == '' or my.trim().substring(0,1) == '#'
+          continue
+        cb = (elm)->
+          elm.name==my
+        if not hosts.some cb
+          hosts.push
+            name: my
+            status:
+              ripl:'waiting'
+              dns:'waiting'
+              ritx:'done'
+              http:'waiting'
       start()
 
 startHttp =->
