@@ -11,6 +11,16 @@ ritx =
   path: "./ritx.sh"
   file: "RitX/out.txt"
 
+httpOptions =
+  url:'',
+  headers:
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 6.1; WOW64) \
+       AppleWebKit/537.36 (KHTML, like Gecko) \
+       Chrome/36.0.1985.143 Safari/537.36'
+  strictSSL:false
+  followAllRedirects:true
+
 exec = require('child_process').exec
 jf = require 'jsonfile'
 request = require 'request'
@@ -29,7 +39,6 @@ myhost =
     http:'waiting'
 
 hosts = [myhost]
-
 results = []
 
 startripl =->
@@ -134,8 +143,11 @@ startHttp =->
         console.log newhost.url
         jf.writeFileSync 'results.json',results
 
-    request 'http://' + host.name + '/',cb
-    request 'https://' + host.name + '/',cb
+    httpOptions.url = 'http://' + host.name + '/'
+    request httpOptions,cb
+
+    httpOptions.url = 'https://' + host.name + '/'
+    request httpOptions,cb
     host.status.http='done'
 
 start =->
